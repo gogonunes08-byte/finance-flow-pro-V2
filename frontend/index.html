@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💰 Finance Flow Pro - Dashboard Inteligente</title>
+    
+    <!-- Chart.js para gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Font Awesome para ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CSS do Dashboard -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- JavaScript modularizado -->
+    <script src="js/api.js" defer></script>
+    <script src="js/charts.js" defer></script>
+    <script src="js/filters.js" defer></script>
+    <script src="js/transactions.js" defer></script>
+    <script src="js/app.js" defer></script>
+</head>
+<body>
+    <!-- Container principal -->
+    <div class="container">
+        <!-- Cabeçalho -->
+        <header class="dashboard-header">
+            <div class="header-left">
+                <h1><i class="fas fa-chart-line"></i> Finance Flow Pro</h1>
+                <p class="subtitle">Dashboard Financeiro Inteligente</p>
+            </div>
+            <div class="header-right">
+                <div class="header-actions">
+                    <button class="btn btn-primary" id="btn-refresh">
+                        <i class="fas fa-sync-alt"></i> Atualizar
+                    </button>
+                    <button class="btn btn-secondary" id="btn-export">
+                        <i class="fas fa-file-export"></i> Exportar
+                    </button>
+                    <div class="theme-toggle">
+                        <i class="fas fa-moon"></i>
+                    </div>
+                </div>
+                <div class="last-update" id="last-update">
+                    Última atualização: <span class="time">--:--</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Cards de Estatísticas -->
+        <section class="stats-section">
+            <div class="stats-grid">
+                <!-- Card: Saldo Total -->
+                <div class="stat-card balance">
+                    <div class="stat-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Saldo Total</h3>
+                        <div class="stat-value" id="total-balance">R$ 0,00</div>
+                        <div class="stat-trend" id="balance-trend">
+                            <i class="fas fa-arrow-up"></i> <span>0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card: Entradas -->
+                <div class="stat-card income">
+                    <div class="stat-icon">
+                        <i class="fas fa-arrow-up"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Entradas</h3>
+                        <div class="stat-value" id="total-income">R$ 0,00</div>
+                        <div class="stat-trend" id="income-trend">
+                            <i class="fas fa-calendar"></i> <span>Este mês: R$ 0,00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card: Saídas -->
+                <div class="stat-card expense">
+                    <div class="stat-icon">
+                        <i class="fas fa-arrow-down"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Saídas</h3>
+                        <div class="stat-value" id="total-expense">R$ 0,00</div>
+                        <div class="stat-trend" id="expense-trend">
+                            <i class="fas fa-calendar"></i> <span>Este mês: R$ 0,00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card: Transações -->
+                <div class="stat-card transactions">
+                    <div class="stat-icon">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Transações</h3>
+                        <div class="stat-value" id="total-transactions">0</div>
+                        <div class="stat-trend" id="transactions-trend">
+                            <i class="fas fa-today"></i> <span>Hoje: 0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Seção de Gráficos -->
+        <section class="charts-section">
+            <div class="charts-grid">
+                <!-- Gráfico 1: Gastos por Categoria -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3><i class="fas fa-chart-pie"></i> Gastos por Categoria</h3>
+                        <select class="chart-filter" id="chart-category-period">
+                            <option value="month">Este Mês</option>
+                            <option value="all">Todo Período</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chart-categories"></canvas>
+                    </div>
+                </div>
+
+                <!-- Gráfico 2: Entradas vs Saídas -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3><i class="fas fa-chart-bar"></i> Entradas vs Saídas</h3>
+                        <select class="chart-filter" id="chart-income-expense-period">
+                            <option value="monthly">Mensal</option>
+                            <option value="weekly">Semanal</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chart-income-expense"></canvas>
+                    </div>
+                </div>
+
+                <!-- Gráfico 3: Evolução do Saldo -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3><i class="fas fa-chart-line"></i> Evolução do Saldo</h3>
+                        <select class="chart-filter" id="chart-balance-period">
+                            <option value="30">30 Dias</option>
+                            <option value="90">90 Dias</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chart-balance"></canvas>
+                    </div>
+                </div>
+
+                <!-- Card: Formas de Pagamento -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3><i class="fas fa-credit-card"></i> Formas de Pagamento</h3>
+                    </div>
+                    <div class="payment-methods" id="payment-methods">
+                        <!-- Será preenchido via JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Seção de Filtros -->
+        <section class="filters-section">
+            <div class="filters-card">
+                <h3><i class="fas fa-filter"></i> Filtros Avançados</h3>
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label for="filter-type"><i class="fas fa-exchange-alt"></i> Tipo</label>
+                        <select id="filter-type" class="filter-select">
+                            <option value="">Todos</option>
+                            <option value="income">Entradas</option>
+                            <option value="expense">Saídas</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="filter-category"><i class="fas fa-tags"></i> Categoria</label>
+                        <select id="filter-category" class="filter-select">
+                            <option value="">Todas</option>
+                            <!-- Categorias serão carregadas via JS -->
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="filter-payment"><i class="fas fa-credit-card"></i> Pagamento</label>
+                        <select id="filter-payment" class="filter-select">
+                            <option value="">Todos</option>
+                            <!-- Formas de pagamento serão carregadas via JS -->
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="filter-date"><i class="fas fa-calendar"></i> Período</label>
+                        <select id="filter-date" class="filter-select">
+                            <option value="">Todo Período</option>
+                            <option value="today">Hoje</option>
+                            <option value="week">Esta Semana</option>
+                            <option value="month">Este Mês</option>
+                            <option value="custom">Personalizado</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="filter-search"><i class="fas fa-search"></i> Busca</label>
+                        <input type="text" id="filter-search" class="filter-input" placeholder="Descrição...">
+                    </div>
+                    
+                    <div class="filter-actions">
+                        <button class="btn btn-primary" id="btn-apply-filters">
+                            <i class="fas fa-check"></i> Aplicar
+                        </button>
+                        <button class="btn btn-secondary" id="btn-clear-filters">
+                            <i class="fas fa-times"></i> Limpar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tabela de Transações -->
+        <section class="transactions-section">
+            <div class="transactions-card">
+                <div class="table-header">
+                    <h3><i class="fas fa-list"></i> Transações Recentes</h3>
+                    <div class="table-actions">
+                        <div class="table-info" id="table-info">
+                            Mostrando 0 de 0 transações
+                        </div>
+                        <div class="pagination">
+                            <button class="pagination-btn" id="btn-prev" disabled>
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <span class="page-info" id="page-info">Página 1 de 1</span>
+                            <button class="pagination-btn" id="btn-next" disabled>
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table id="transactions-table">
+                        <thead>
+                            <tr>
+                                <th>Data <i class="fas fa-sort"></i></th>
+                                <th>Descrição <i class="fas fa-sort"></i></th>
+                                <th>Categoria <i class="fas fa-sort"></i></th>
+                                <th>Tipo <i class="fas fa-sort"></i></th>
+                                <th>Valor <i class="fas fa-sort"></i></th>
+                                <th>Pagamento</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactions-body">
+                            <!-- Transações serão inseridas aqui via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="table-loading" id="table-loading">
+                    <div class="loading-spinner"></div>
+                    <p>Carregando transações...</p>
+                </div>
+                
+                <div class="table-empty" id="table-empty" style="display: none;">
+                    <i class="fas fa-inbox"></i>
+                    <p>Nenhuma transação encontrada</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Rodapé -->
+        <footer class="dashboard-footer">
+            <div class="footer-content">
+                <div class="footer-left">
+                    <p><i class="fas fa-server"></i> Sistema: <span id="system-status">Online</span></p>
+                    <p><i class="fas fa-database"></i> Banco de dados: <span id="db-count">0</span> transações</p>
+                </div>
+                <div class="footer-right">
+                    <p><i class="fas fa-clock"></i> Última sincronização: <span id="last-sync">--:--</span></p>
+                    <p><i class="fas fa-code"></i> Finance Flow Pro v2.0 - Backend Modularizado</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Modal para Detalhes da Transação -->
+    <div class="modal" id="transaction-modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Detalhes da Transação</h3>
+                <button class="modal-close" id="modal-close">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Conteúdo do modal será preenchido via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Notificações -->
+    <div class="notifications" id="notifications"></div>
+
+    <!-- JavaScript Inline (inicialização) -->
+    <script>
+        // Configurações globais
+        const CONFIG = {
+            API_BASE_URL: 'http://localhost:3000/api',
+            ITEMS_PER_PAGE: 15,
+            AUTO_REFRESH_INTERVAL: 30000 // 30 segundos
+        };
+
+        // Estado da aplicação
+        const APP_STATE = {
+            currentPage: 1,
+            totalPages: 1,
+            totalTransactions: 0,
+            filters: {},
+            sortField: 'date',
+            sortDirection: 'desc',
+            transactions: [],
+            charts: {},
+            isLoading: false
+        };
+
+        console.log('🚀 Finance Flow Pro Dashboard inicializado');
+        console.log('📊 Conectando à API em:', CONFIG.API_BASE_URL);
+    </script>
+</body>
+</html>
